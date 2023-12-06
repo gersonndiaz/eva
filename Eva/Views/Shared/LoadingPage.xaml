@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Eva.Views.Shared.LoadingPage"
+             Title="Cargando..."
+             Padding="10">
+    <StackLayout VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand">
+        <ActivityIndicator IsRunning="True" Color="{AppThemeBinding Dark={StaticResource Secondary}, Light={StaticResource Primary}}" />
+        <Label x:Name="lblMensaje" Text="Cargando..." TextColor="{AppThemeBinding Dark={StaticResource Secondary}, Light={StaticResource Primary}}" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" />
+    </StackLayout>
+</ContentPage>

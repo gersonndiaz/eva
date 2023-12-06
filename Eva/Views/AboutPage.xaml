@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Eva.Views.AboutPage"
+             Title="Nosotros"
+             Padding="10">
+    <ContentPage.Content>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackLayout BackgroundColor="{AppThemeBinding Dark={StaticResource BsSecondary}, Light={StaticResource Primary}}" VerticalOptions="FillAndExpand" HorizontalOptions="Fill">
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center">
+                    <ContentView Padding="0,40,0,40" VerticalOptions="FillAndExpand">
+                        <Image Source="{AppThemeBinding Dark=logo_ckelar.png, Light=logo_ckelar_dark.png}" VerticalOptions="Center" HeightRequest="64" WidthRequest="200" />
+                    </ContentView>
+                </StackLayout>
+            </StackLayout>
+            <ScrollView Grid.Row="1">
+                <StackLayout Orientation="Vertical" Padding="30,24,30,24" Spacing="10">
+                    <Label Text="Descripción Aplicación" FontSize="Title" TextColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                    <Label FontSize="16" Padding="0,24,0,0" TextColor="{AppThemeBinding Dark=White, Light=Black}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <FormattedString.Spans>
+                                    <Span Text="¡Hola! Bienvenido a nuestra app, tu nuevo compañero para sacarle el máximo partido a tu dispositivo Arduino. Aquí, conectar tu Arduino es pan comido: puedes hacerlo fácilmente vía Bluetooth o USB. ¿Quieres configurar tu WiFi o ajustar la hora? ¡No hay problema! Con unos pocos toques, tendrás todo listo. Pero eso no es todo: también puedes enviar comandos personalizados a través de Bluetooth para que tu Arduino haga exactamente lo que necesitas. Ya sea para un proyecto escolar, un experimento casero o solo por diversión, nuestra app está aquí para ayudarte a hacer realidad tus ideas. ¡Disfruta creando!"/>
+                                </FormattedString.Spans>
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+                    <Label Text="Sobre Nosotros" FontSize="Title" Margin="0,40,0,0" TextColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                    <Label FontSize="16" Padding="0,24,0,0" TextColor="{AppThemeBinding Dark=White, Light=Black}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <FormattedString.Spans>
+                                    <Span Text="Somos una empresa de tecnología especializada en desarrollar sistemas y aplicaciones. Nuestro enfoque es crear software que ofrezca soluciones objetivas, creativas e innovadoras para nuestros clientes."/>
+                                </FormattedString.Spans>
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Button Margin="0,10,0,0" Text="Saber más"
+                        BackgroundColor="{AppThemeBinding Dark={StaticResource Secondary}, Light={StaticResource Primary}}"
+                        TextColor="White"
+                        Clicked="btnAbout_Clicked"/>
+                </StackLayout>
+            </ScrollView>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>
