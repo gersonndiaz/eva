@@ -1,4 +1,4 @@
-﻿using Eva.Models;
+﻿using Eva.Models.App;
 using Eva.Shared.Network;
 using Windows.Devices.WiFi;
 

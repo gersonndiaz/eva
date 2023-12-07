@@ -6,33 +6,19 @@
              Padding="10">
     <ScrollView>
         <StackLayout>
-            <!-- Botón para iniciar la búsqueda de dispositivos Bluetooth -->
-            <Button Text="Conectar Bluetooth" Clicked="ConnectToArduinoBluetooth"/>
-
-            <!-- Lista para mostrar los dispositivos Bluetooth disponibles -->
-            <ListView x:Name="deviceListView" 
-              ItemsSource="{Binding deviceList}" 
-              ItemSelected="DeviceSelected"
-                  BackgroundColor="DarkBlue">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <TextCell Text="{Binding Name}" Detail="{Binding Id}" TextColor="Yellow"/>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-
             <!-- Selector para las redes Wi-Fi disponibles -->
-            <Picker x:Name="jsonPicker" 
+            <Picker x:Name="wifiPicker" 
                     Title="Selecciona una red Wi-Fi"
                     ItemDisplayBinding="{Binding GetGlosa}"
                     SelectedItem="{Binding SSID}"
-                    SelectedIndex="{Binding SSID}"/>
+                    SelectedIndex="{Binding SSID}"
+                    SelectedIndexChanged="wifiPicker_SelectedIndexChanged"/>
 
             <!-- Entrada para la contraseña -->
             <Entry x:Name="passwordEntry" Placeholder="Ingrese contraseña" IsPassword="True"/>
 
             <!-- Botón para enviar los datos seleccionados -->
-            <Button Text="Enviar" Clicked="OnSendClicked"/>
+            <Button x:Name="btnSetWifi" Text="Enviar" Clicked="OnSendClicked" IsEnabled="False"/>
         </StackLayout>
     </ScrollView>
 </ContentPage>

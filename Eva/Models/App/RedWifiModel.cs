@@ -1,11 +1,10 @@
 ﻿using AutoMapper.Configuration.Annotations;
 using Eva.Helpers.Networks;
-using Newtonsoft.Json;
 using System.Diagnostics;
 
-namespace Eva.Models
+namespace Eva.Models.App
 {
-    public class RedesJson
+    public class RedWifiModel
     {
         public List<Network> networks { get; set; }
     }

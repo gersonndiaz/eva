@@ -2,6 +2,6 @@
 {
     public interface IWifiService
     {
-        Task<List<Eva.Models.Network>> GetAvailableNetworksAsync();
+        Task<List<Models.App.Network>> GetAvailableNetworksAsync();
     }
 }

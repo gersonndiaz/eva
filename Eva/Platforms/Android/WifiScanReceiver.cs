@@ -1,14 +1,15 @@
 ﻿using Android.Content;
 using Android.Net.Wifi;
+using Eva.Models.App;
 
 namespace Eva.Platforms.Android
 {
     public class WifiScanReceiver : BroadcastReceiver
     {
-        private TaskCompletionSource<List<Eva.Models.Network>> _taskCompletionSource;
+        private TaskCompletionSource<List<Network>> _taskCompletionSource;
         private WifiManager _wifiManager;
 
-        public WifiScanReceiver(WifiManager wifiManager, TaskCompletionSource<List<Eva.Models.Network>> taskCompletionSource)
+        public WifiScanReceiver(WifiManager wifiManager, TaskCompletionSource<List<Network>> taskCompletionSource)
         {
             _wifiManager = wifiManager;
             _taskCompletionSource = taskCompletionSource;
@@ -16,7 +17,7 @@ namespace Eva.Platforms.Android
 
         public override void OnReceive(Context context, Intent intent)
         {
-            var networks = new List<Eva.Models.Network>();
+            var networks = new List<Network>();
             var results = _wifiManager.ScanResults;
             foreach (var result in results)
             {

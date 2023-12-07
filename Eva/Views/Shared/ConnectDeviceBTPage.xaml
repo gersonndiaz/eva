@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Eva.Views.Shared.ConnectDeviceBTPage"
+             Title="ConnectDeviceBTPage">
+    <VerticalStackLayout>
+        <!-- Botón para iniciar la búsqueda de dispositivos Bluetooth -->
+        <Button Text="Conectar Bluetooth" Clicked="ConnectToArduinoBluetooth"/>
+
+        <!-- Lista para mostrar los dispositivos Bluetooth disponibles -->
+        <ListView x:Name="deviceListView" 
+                  ItemsSource="{Binding deviceList}" 
+                  ItemSelected="DeviceSelected"
+                  BackgroundColor="DarkBlue">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextCell Text="{Binding Name}" Detail="{Binding Id}" TextColor="Yellow"/>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </VerticalStackLayout>
+</ContentPage>
