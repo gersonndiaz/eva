@@ -1,6 +1,5 @@
 using Eva.Helpers.BT;
 using Plugin.BLE.Abstractions.Contracts;
-using Plugin.BLE.UWP;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 
@@ -21,7 +20,13 @@ public partial class ConnectDeviceBTPage : ContentPage
         adapter = bluetoothService.adapter;
         ble = bluetoothService.ble;
 
+        bluetoothService.DeviceConnected += BluetoothService_DeviceConnected;
         bluetoothService.DeviceDiscovered += BluetoothService_DeviceDiscovered;
+    }
+
+    private void BluetoothService_DeviceConnected(object? sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
+    {
+        Navigation.PopAsync(true);
     }
 
     private void BluetoothService_DeviceDiscovered(object? sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
@@ -46,6 +51,7 @@ public partial class ConnectDeviceBTPage : ContentPage
                 return;
             }
 
+            await Navigation.PushModalAsync(new LoadingPage("Buscar WIFI", "Buscando dispositivos cercanos..."));
             var tempList = await bluetoothService.FindDevicesBluetooth(null);
 
             deviceList.Clear();
@@ -71,6 +77,12 @@ public partial class ConnectDeviceBTPage : ContentPage
             }
 
             deviceListView.ItemsSource = deviceList;
+
+            try
+            {
+                await Navigation.PopModalAsync();
+            }
+            catch { }
         }
         catch (Exception ex)
         {

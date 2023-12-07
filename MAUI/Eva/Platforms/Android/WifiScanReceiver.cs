@@ -25,7 +25,7 @@ namespace Eva.Platforms.Android
                     && !networks.Any(x => x.SSID == result.Ssid))
                 {
 
-                    var netData = new Eva.Models.Network
+                    var netData = new Eva.Models.App.Network
                     {
                         SSID = result.Ssid,
                         BSSID = result.Bssid,

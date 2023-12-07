@@ -1,12 +1,10 @@
-﻿using Eva.Models.App;
+﻿using Eva.Models.Device;
 using Newtonsoft.Json;
 using Plugin.BLE;
 using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
-using Plugin.BLE.UWP;
 using System.Diagnostics;
-using System.Reflection.PortableExecutable;
 using System.Text;
 
 namespace Eva.Helpers.BT
@@ -225,9 +223,9 @@ namespace Eva.Helpers.BT
                             {
                                 var v = await characteristic.ReadAsync();
                                 string val = Encoding.UTF8.GetString(v.data);
-                                RedWifiModel redesWifi = JsonConvert.DeserializeObject<RedWifiModel>(val);
+                                var conexionWifi = JsonConvert.DeserializeObject<ConexionWifiModel>(val);
 
-                                if (redesWifi != null)
+                                if (conexionWifi != null)
                                 {
                                     characteristics.Add("WIFI", characteristic);
                                 }
