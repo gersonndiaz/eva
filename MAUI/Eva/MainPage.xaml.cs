@@ -44,7 +44,7 @@ namespace Eva
                 {
                     if (Navigation.NavigationStack.Where(x => x is ConnectDeviceBTPage).Count() > 0)
                         return;
-                    Navigation.PushAsync(new ConnectDeviceBTPage());
+                    await Navigation.PushAsync(new ConnectDeviceBTPage());
                 }
                 catch (Exception ex)
                 {

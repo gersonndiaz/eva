@@ -14,10 +14,18 @@
 
     <Shell.ToolbarItems>
         <!-- Icono de Conexión -->
-        <ToolbarItem Text="Conexión" />
+        <ToolbarItem x:Name="ConnectionOp">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FontSolid" Glyph="&#xf1e6;" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
 
         <!-- Icono de Información del Desarrollador -->
-        <ToolbarItem Text="Acerca de" Clicked="AboutItem_Clicked" />
+        <ToolbarItem Clicked="AboutItem_Clicked">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FontSolid" Glyph="&#xf05a;" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
     </Shell.ToolbarItems>
 
 </Shell>
