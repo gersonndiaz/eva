@@ -77,18 +77,25 @@ public partial class ConnectDeviceBTPage : ContentPage
             }
 
             deviceListView.ItemsSource = deviceList;
-
-            try
-            {
-                await Navigation.PopModalAsync();
-            }
-            catch { }
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"{ex}");
             Console.WriteLine($"{ex}");
             await DisplayAlert("Error", ex.Message, "OK");
+        }
+
+        try
+        {
+            if (Navigation.ModalStack.Where(x => x is LoadingPage).Count() > 0)
+            {
+                await Navigation.PopModalAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            Debug.WriteLine(ex);
         }
     }
 

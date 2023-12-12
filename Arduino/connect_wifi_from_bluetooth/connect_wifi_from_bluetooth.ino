@@ -11,7 +11,12 @@
 
 #include <ArduinoJson.h>
 #include <ArduinoBLE.h>
+#include <SD.h>
+#include <SPI.h>
 #include <WiFiS3.h>
+#include <Wire.h>
+
+File fileWifiData;
 
 BLEService bleWifiService("2093346a-f97d-4849-8a8c-347696a8935b");                                                                        // UUID para el servicio BLE
 BLECharacteristic bleWifiScanCharacteristic("9edf7ce0-0839-4d0c-95c6-4511a1cd012d", BLERead | BLEWrite | BLENotify | BLEBroadcast, 512);  // Para enviar la lista de Wi-Fi
@@ -56,6 +61,15 @@ void setup() {
 
   Serial.println("Módulo WIFI® activado, esperando conexiones...");
 
+  // Inicialización de Módulo SD
+  if (!SD.begin(10)) { // Asegúrate de que el pin SD coincida con tu configuración
+    Serial.println("Falló la inicialización de la SD");
+    while (1);
+  }
+  Serial.println("Módulo SD® activado!");
+
+
+  initConnectionWifiFromSD(fileWifiData, "wd.ad");
   getWifiListJson();
 }
 
@@ -149,6 +163,8 @@ void bleCharacteristicWifiWritten(BLEDevice central, BLECharacteristic character
   // Esperar 2 segundos para imprimir los datos de la red:
   delay(2000);
 
+  saveDataWifiSD(fileWifiData, "wd.ad", jsonString);
+
   printWifiData();
 }
 
@@ -175,7 +191,7 @@ void getWifiListJson() {
     
     Serial.println("Conexión WIFI: Conectado");
     Serial.print("Dirección IP: ");
-    Serial.print(ip);
+    Serial.println(ip);
 
     statusNetwork["status"] = "Conectado";
     statusNetwork["ssid"] = WiFi.SSID();
@@ -209,7 +225,7 @@ void printWifiData() {
   {
     Serial.println("Conexión WIFI: Conectado");
     Serial.print("Dirección IP: ");
-    Serial.print(ip);
+    Serial.println(ip);
 
     statusNetwork["status"] = "Conectado";
     statusNetwork["ssid"] = WiFi.SSID();
@@ -222,4 +238,71 @@ void printWifiData() {
 
   const char* jsonData = json.c_str();
   bleWifiScanCharacteristic.writeValue((const uint8_t*)jsonData, json.length());
+}
+
+
+/*
+  Utilizar SD
+*/
+bool initConnectionWifiFromSD(File file, const char* fileName)
+{
+  file = SD.open(fileName);
+  if (file) {
+    Serial.println("Conexión WIFI:");
+
+    String jsonString;
+    while (file.available()) {
+      jsonString += (char)file.read();
+    }
+    file.close();
+
+    // Parsear datos JSON a STRING
+    StaticJsonDocument<200> doc;  // Ajuste el tamaño según su complejidad JSON
+    DeserializationError error = deserializeJson(doc, jsonString);
+
+    // Verificar error al parsear los datos
+    if (error) {
+      Serial.print("Error al parsear el JSON: ");
+      Serial.println(error.c_str());
+      return false;
+    }
+
+    // Acceder a ls valores del JSON
+    const char* ssid = doc["SSID"];
+    const char* password = doc["password"];
+
+    // Conectar a red WPA/WPA2:
+    WiFi.begin(ssid, password);
+
+    // Esperar 2 segundos para imprimir los datos de la red:
+    delay(2000);
+
+    printWifiData();
+
+    return true;
+  } else {
+    Serial.println("Error al abrir el archivo!");
+    return false;
+  }
+}
+
+bool saveDataWifiSD(File file, const char* fileName, const char* data)
+{
+  // Comprueba si el archivo existe
+  if (SD.exists(fileName)) {
+    // Elimina el archivo
+    SD.remove(fileName);
+  }
+
+  file = SD.open(fileName, FILE_WRITE);
+
+  if (file) {
+    file.println(data);
+    file.close();
+    Serial.println("Datos WIFI almacenados!");
+    return true;
+  } else {
+    Serial.println("Error al abrir el archivo!");
+    return false;
+  }
 }

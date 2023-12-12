@@ -1,5 +1,6 @@
 ﻿using Eva.Models.App;
 using Eva.Shared.Network;
+using System.Diagnostics;
 using Windows.Devices.WiFi;
 
 namespace Eva.Platforms.Windows
@@ -22,25 +23,41 @@ namespace Eva.Platforms.Windows
                 return wifiNetworks;
             }
 
-            var adapter = adapters[0];
-            await adapter.ScanAsync();
-
-            foreach (var network in adapter.NetworkReport.AvailableNetworks)
+            try
             {
-                if (wifiNetworks != null 
-                    && !wifiNetworks.Any(x => x.SSID == network.Ssid && x.Band == GetBandFromFrequency(network.ChannelCenterFrequencyInKilohertz)))
-                {
-                    Network netData = new Network();
-                    netData.SSID = network.Ssid;
-                    netData.BSSID = network.Bssid;
-                    netData.Band = GetBandFromFrequency(network.ChannelCenterFrequencyInKilohertz);
-                    netData.ChannelCenterFrequencyInKilohertz = network.ChannelCenterFrequencyInKilohertz;
-                    //netData.NetworkKind = network.NetworkKind;
-                    netData.NetworkRssiInDecibelMilliwatts = network.NetworkRssiInDecibelMilliwatts;
-                    //netData.SecuritySettings = network.SecuritySettings;
+                var adapter = adapters[0];
+                await adapter.ScanAsync();
 
-                    wifiNetworks.Add(netData);
+                foreach (var network in adapter.NetworkReport.AvailableNetworks)
+                {
+                    try
+                    {
+                        if (wifiNetworks != null
+                        && !wifiNetworks.Any(x => x.SSID == network.Ssid && x.Band == GetBandFromFrequency(network.ChannelCenterFrequencyInKilohertz)))
+                        {
+                            Network netData = new Network();
+                            netData.SSID = network.Ssid;
+                            netData.BSSID = network.Bssid;
+                            netData.Band = GetBandFromFrequency(network.ChannelCenterFrequencyInKilohertz);
+                            netData.ChannelCenterFrequencyInKilohertz = network.ChannelCenterFrequencyInKilohertz;
+                            //netData.NetworkKind = network.NetworkKind;
+                            netData.NetworkRssiInDecibelMilliwatts = network.NetworkRssiInDecibelMilliwatts;
+                            //netData.SecuritySettings = network.SecuritySettings;
+
+                            wifiNetworks.Add(netData);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        Debug.WriteLine(e);
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Debug.WriteLine(e);
             }
 
             return wifiNetworks;

@@ -1,6 +1,7 @@
 ﻿using Eva.Helpers.BT;
 using Eva.Views;
 using Eva.Views.Shared;
+using Plugin.BLE.Abstractions.Contracts;
 using System.Diagnostics;
 
 namespace Eva
@@ -8,12 +9,28 @@ namespace Eva
     public partial class MainPage : ContentPage
     {
         BluetoothService bluetoothService;
-
+        IAdapter adapter;
+        IBluetoothLE ble;
         public MainPage()
         {
             InitializeComponent();
 
             bluetoothService = BluetoothService.Instance;
+            adapter = bluetoothService.adapter;
+            ble = bluetoothService.ble;
+
+            bluetoothService.DeviceDisconnected += BluetoothService_DeviceDisconnected;
+            bluetoothService.DeviceConnectionLost += BluetoothService_DeviceConnectionLost;
+        }
+
+        private async void BluetoothService_DeviceConnectionLost(object? sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
+        {
+            await DisplayAlert("Error Bluetooth", $"Se ha perdido la conexión con el dispositivo {e.Device.Name}", "OK");
+        }
+
+        private async void BluetoothService_DeviceDisconnected(object? sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
+        {
+            await DisplayAlert("Error Bluetooth", $"Se ha desconectado el dispositivo {e.Device.Name}", "OK");
         }
 
         protected override async void OnAppearing()
