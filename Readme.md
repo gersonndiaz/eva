@@ -22,4 +22,4 @@ Actualmente solo permite la conexión con el dispositivo por Bluetooth.
 
 ## Licencia 📄
 
-Este proyecto está bajo la Licencia GPLv3 - mira el archivo [LICENSE.txt](LICENSE.txt) para detalles
+Este proyecto está bajo la Licencia GPLv3 - mira el archivo [License.txt](License.txt) para detalles
