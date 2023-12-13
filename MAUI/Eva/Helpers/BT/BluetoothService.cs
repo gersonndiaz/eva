@@ -19,12 +19,16 @@ namespace Eva.Helpers.BT
 
         public Dictionary<string, ICharacteristic> characteristics;
 
+        // Eventos BT
+        public event EventHandler<BluetoothStateChangedArgs> BluetoothStateChanged;
+
         // Eventos Adaptador
         public event EventHandler<DeviceEventArgs> DeviceConnected;
         public event EventHandler<DeviceEventArgs> DeviceDisconnected;
         public event EventHandler<DeviceEventArgs> DeviceDiscovered;
         public event EventHandler<DeviceEventArgs> DeviceConnectionLost;
         public event EventHandler<DeviceEventArgs> DeviceConnectionError;
+        public event EventHandler<DeviceBondStateChangedEventArgs> DeviceBondStateChanged;
 
         // Eventos Characteristics
         public event EventHandler<CharacteristicUpdatedEventArgs> CharacteristicUpdated;
@@ -34,11 +38,24 @@ namespace Eva.Helpers.BT
             ble = CrossBluetoothLE.Current;
             adapter = CrossBluetoothLE.Current.Adapter;
 
+            ble.StateChanged += Ble_StateChanged;
+
             adapter.DeviceConnected += Adapter_DeviceConnected;
             adapter.DeviceDisconnected += Adapter_DeviceDisconnected;
             adapter.DeviceDiscovered += Adapter_DeviceDiscovered;
             adapter.DeviceConnectionLost += Adapter_DeviceConnectionLost;
             adapter.DeviceConnectionError += Adapter_DeviceConnectionError;
+            adapter.DeviceBondStateChanged += Adapter_DeviceBondStateChanged;
+        }
+
+        /// <summary>
+        /// Identifica si ha cambiado el estado del dispositivo actual de Bluetooth
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Ble_StateChanged(object? sender, BluetoothStateChangedArgs e)
+        {
+            BluetoothStateChanged?.Invoke(this, e);
         }
 
         #region Eventos Adaptador Bluetooth
@@ -96,6 +113,16 @@ namespace Eva.Helpers.BT
         {
             DeviceConnectionError.Invoke(this, e);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Adapter_DeviceBondStateChanged(object? sender, DeviceBondStateChangedEventArgs e)
+        {
+            DeviceBondStateChanged?.Invoke(this, e);
+        }
         #endregion Eventos Adaptador Bluetooth
 
         /// <summary>
@@ -131,19 +158,6 @@ namespace Eva.Helpers.BT
         {
             try
             {
-                //var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
-                //if (status != PermissionStatus.Granted)
-                //{
-                //    status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-                //}
-
-                //if (ble.State == BluetoothState.Off)
-                //{
-                //    // Pedir al usuario que active Bluetooth
-                //    await DisplayAlert("Bluetooth desactivado", "Por favor, activa el Bluetooth", "OK");
-                //    return;
-                //}
-
                 var deviceList = new List<IDevice>();
 
                 var tempList = new List<IDevice>();

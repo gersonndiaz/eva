@@ -24,12 +24,12 @@ public partial class ConnectDeviceBTPage : ContentPage
         bluetoothService.DeviceDiscovered += BluetoothService_DeviceDiscovered;
     }
 
-    private void BluetoothService_DeviceConnected(object? sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
+    private async void BluetoothService_DeviceConnected(object? sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
     {
-        Navigation.PopAsync(true);
+        //Navigation.PopAsync(true);
     }
 
-    private void BluetoothService_DeviceDiscovered(object? sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
+    private async void BluetoothService_DeviceDiscovered(object? sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
     {
         //throw new NotImplementedException();
     }
@@ -48,6 +48,12 @@ public partial class ConnectDeviceBTPage : ContentPage
             {
                 // Pedir al usuario que active Bluetooth
                 await DisplayAlert("Bluetooth desactivado", "Por favor, activa el Bluetooth", "OK");
+                return;
+            }
+
+            if (ble.State == BluetoothState.Unavailable)
+            {
+                await DisplayAlert("Bluetooth no soportado", "Su dispositivo no soporta el uso de Bluetooth!", "OK");
                 return;
             }
 
@@ -99,11 +105,29 @@ public partial class ConnectDeviceBTPage : ContentPage
         }
     }
 
-    private void DeviceSelected(object sender, SelectedItemChangedEventArgs e)
+    private async void DeviceSelected(object sender, SelectedItemChangedEventArgs e)
     {
         if (e.SelectedItem is IDevice selectedDevice)
         {
-            bluetoothService.ConnectToDevice(selectedDevice);
+            try
+            {
+                bool isConnected = await bluetoothService.ConnectToDevice(selectedDevice);
+
+                if (isConnected)
+                {
+                    await Navigation.PopAsync(true);
+                }
+                else
+                {
+                    await DisplayAlert("Error", $"No fue posible establecer conexión con el dispositivo {selectedDevice.Name}", "OK");
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+                Debug.WriteLine(ex);
+                await DisplayAlert("Error", $"Se produjo un error al intentar establecer conexión con el dispositivo {selectedDevice.Name}", "OK");
+            }
         }
     }
 }

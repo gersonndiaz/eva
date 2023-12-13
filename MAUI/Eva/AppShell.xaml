@@ -14,7 +14,7 @@
 
     <Shell.ToolbarItems>
         <!-- Icono de Conexión -->
-        <ToolbarItem x:Name="ConnectionOp">
+        <ToolbarItem x:Name="ConnectionOp" Clicked="ConnectionOp_Clicked">
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="FontSolid" Glyph="&#xf1e6;" />
             </ToolbarItem.IconImageSource>
