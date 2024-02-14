@@ -257,24 +257,42 @@ namespace Eva
             {
                 if (bluetoothService.characteristics != null)
                 {
-                    var wifiCharacteristic = bluetoothService.characteristics.FirstOrDefault(x => x.Key == "WIFI");
-                    var v = await wifiCharacteristic.Value.ReadAsync();
+                    var rtcCharacteristic = bluetoothService.characteristics.FirstOrDefault(x => x.Key == "RTC");
+                    var v = await rtcCharacteristic.Value.ReadAsync();
                     string val = Encoding.UTF8.GetString(v.data);
-                    var conexionWifi = JsonConvert.DeserializeObject<ConexionWifiModel>(val);
+                    var rtcModel = JsonConvert.DeserializeObject<RtcModel>(val);
 
-                    if (conexionWifi != null)
+                    if (rtcModel != null)
                     {
                         var device = await bluetoothService.GetDeviceConnected();
 
-                        if (conexionWifi.network.status.ToUpper() == "CONECTADO")
-                        {
-                            await DisplayAlert("Estado Conexión", $"El dispositivo {device.Name} se encuentra conectado a la red {conexionWifi.network.ssid}. Su IP actual es {conexionWifi.network.ip}", "OK");
+                        var actualizar = await DisplayAlert("Estado RTC", $"Estado del RTC del dispositivo {device.Name}: \n\nEstado: {rtcModel.rtc.status}\n\n* Fecha: {rtcModel.rtc.datetime}", "Actualizar", "Cerrar");
 
-                            await Navigation.PopAsync();
-                        }
-                        else
+                        if (actualizar)
                         {
-                            await DisplayAlert("Estado Conexión", $"El dispositivo {device.Name} no pudo conectarse a la red. Por favor intentelo nuevamente.", "OK");
+                            rtcModel.rtc.datetime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss").Replace(" ", "T");
+                            var jsonToSend = JsonConvert.SerializeObject(rtcModel);
+
+                            await rtcCharacteristic.Value.WriteAsync(Encoding.ASCII.GetBytes(jsonToSend));
+
+                            #region Característica RTC
+                            try
+                            {
+                                var cVal = await rtcCharacteristic.Value.ReadAsync();
+                                string cValData = Encoding.UTF8.GetString(cVal.data);
+                                var rtcData = JsonConvert.DeserializeObject<RtcModel>(cValData);
+
+                                if (rtcData != null)
+                                {
+                                    await DisplayAlert("Estado RTC", $"Estado del RTC del dispositivo {device.Name}: \n\nEstado: {rtcData.rtc.status}\n\n* Fecha: {rtcData.rtc.datetime}", "OK");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine($"{ex}");
+                                Console.WriteLine($"{ex}");
+                            }
+                            #endregion Característica RTC
                         }
                     }
                     else

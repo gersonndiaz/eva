@@ -58,7 +58,7 @@ void setup() {
   bleWifiScanCharacteristic.setEventHandler(BLEWritten, bleCharacteristicWifiWritten);
   bleWifiStatusCharacteristic.setEventHandler(BLEWritten, bleCharacteristicWifiStatus);
 
-  //bleSetHourCharacteristic.setEventHandler(BLEWritten, bleCharacteristicWifiWritten);
+  bleSetHourCharacteristic.setEventHandler(BLEWritten, bleCharacteristicRtcWritten);
   bleGetHourCharacteristic.setEventHandler(BLEWritten, bleCharacteristicRTCCurrent);
 
   Serial.println("Módulo Bluetooth® activado, esperando conexiones...");
@@ -114,6 +114,7 @@ void bleConnectHandler(BLEDevice central) {
 
   delay(2000);
   getWifiListJson();
+  printCurrentRTC();
 }
 
 /*
@@ -349,6 +350,70 @@ void bleCharacteristicRTCCurrent(BLEDevice central, BLECharacteristic characteri
   printCurrentRTC();
 }
 
+void bleCharacteristicRtcWritten(BLEDevice central, BLECharacteristic characteristic)
+{
+  Serial.print("Evento de escritura de característica de seteo de Fecha y Hora: ");
+
+  uint8_t characteristicValue[200];
+  int bytesRead = characteristic.readValue(characteristicValue, sizeof(characteristicValue));
+
+  Serial.print("Bytes recibidos: ");
+  for (int i = 0; i < bytesRead; i++) {
+    Serial.print(characteristicValue[i], HEX);
+    Serial.print(" ");
+  }
+  Serial.println();
+
+  String receivedString = "";
+
+  for (int i = 0; i < bytesRead; i++) {
+    receivedString += (char)characteristicValue[i];
+  }
+
+  Serial.println("Valor: " + receivedString);
+
+
+  // Convertir JSON a STRING
+  const char* jsonString = receivedString.c_str();
+
+  // Parsear datos JSON a STRING
+  StaticJsonDocument<200> doc;  // Ajuste el tamaño según su complejidad JSON
+  DeserializationError error = deserializeJson(doc, jsonString);
+
+  // Verificar error al parsear los datos
+  if (error) {
+    Serial.print("Error al parsear el JSON: ");
+    Serial.println(error.c_str());
+    return;
+  }
+
+  // Acceder a ls valores del JSON
+  const char* rDatetime = doc["datetime"];
+
+  // Imprimir los valores encontrados
+  Serial.print("DateTime: ");
+  Serial.println(rDatetime);
+
+  // Tu fecha y hora en formato string
+  //char dateTime[] = "2024-02-14T14:30:00";
+
+  int year, month, day, hour, minute, second;
+  // Parsea la fecha y hora del string
+  sscanf(rDatetime, "%d-%d-%dT%d:%d:%d", &year, &month, &day, &hour, &minute, &second);
+  
+  // Crea un objeto RTCTime con la fecha y hora parseadas
+  // Asumimos que el horario de verano está inactivo y usamos un valor dummy para el día de la semana
+  RTCTime mytime(day, static_cast<Month>(month), year, hour, minute, second, DayOfWeek::SUNDAY, SaveLight::SAVING_TIME_INACTIVE);
+
+  // Guarda la nueva fecha y hora
+  RTC.setTime(mytime);
+
+  // Esperar 2 segundos para imprimir los datos de la red:
+  delay(2000);
+
+  printCurrentRTC();
+}
+
 /*
  Imprimir datos RTC actuales
 */
@@ -361,11 +426,11 @@ void printCurrentRTC() {
 
   if (RTC.isRunning()) {
     Serial.println("RTC en ejecución");
-    statusRTC["status"] = "RTC en ejecución";
+    statusRTC["status"] = "Corriendo";
   }
   else {
     Serial.println("RTC detenido");
-    statusRTC["status"] = "RTC detenido";
+    statusRTC["status"] = "Detenido";
   }
 
   /* GET CURRENT TIME FROM RTC */

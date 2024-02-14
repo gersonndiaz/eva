@@ -232,6 +232,22 @@ namespace Eva.Helpers.BT
                         {
                             characteristic.ValueUpdated += Characteristic_ValueUpdated;
 
+#if (DEBUG)
+                            try
+                            {
+                                var v = await characteristic.ReadAsync();
+                                string val = Encoding.UTF8.GetString(v.data);
+
+                                Debug.WriteLine($"Characteristic: {val}");
+                                Console.WriteLine($"Characteristic: {val}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine($"{ex}");
+                                Console.WriteLine($"{ex}");
+                            }
+#endif
+
                             #region Característica WIFI
                             try
                             {
@@ -250,6 +266,25 @@ namespace Eva.Helpers.BT
                                 Console.WriteLine($"{ex}");
                             }
                             #endregion Característica WIFI
+
+                            #region Característica RTC
+                            try
+                            {
+                                var v = await characteristic.ReadAsync();
+                                string val = Encoding.UTF8.GetString(v.data);
+                                var rtcData = JsonConvert.DeserializeObject<RtcModel>(val);
+
+                                if (rtcData != null)
+                                {
+                                    characteristics.Add("RTC", characteristic);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine($"{ex}");
+                                Console.WriteLine($"{ex}");
+                            }
+                            #endregion Característica RTC
                         }
                     }
                 }
