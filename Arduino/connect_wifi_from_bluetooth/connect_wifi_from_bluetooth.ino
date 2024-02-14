@@ -11,6 +11,7 @@
 
 #include <ArduinoJson.h>
 #include <ArduinoBLE.h>
+#include <RTC.h>
 #include <SD.h>
 #include <SPI.h>
 #include <WiFiS3.h>
@@ -19,7 +20,10 @@
 File fileWifiData;
 
 BLEService bleWifiService("2093346a-f97d-4849-8a8c-347696a8935b");                                                                        // UUID para el servicio BLE
-BLECharacteristic bleWifiScanCharacteristic("9edf7ce0-0839-4d0c-95c6-4511a1cd012d", BLERead | BLEWrite | BLENotify | BLEBroadcast, 512);  // Para enviar la lista de Wi-Fi
+BLECharacteristic bleWifiScanCharacteristic("9edf7ce0-0839-4d0c-95c6-4511a1cd012d", BLERead | BLEWrite | BLENotify | BLEBroadcast, 512);  // Para enviar la lista de WiFi
+BLECharacteristic bleWifiStatusCharacteristic("645cfbf1-ac92-433d-a1e2-fb87bdfc6a96", BLERead | BLEWrite | BLENotify | BLEBroadcast, 512);  // Para consultar el estado del WiFi
+BLECharacteristic bleSetHourCharacteristic("71fa80e7-1671-4bb6-b9a0-8b4153e90297", BLERead | BLEWrite | BLENotify | BLEBroadcast, 512);  // Para establecer la Hora
+BLECharacteristic bleGetHourCharacteristic("ebe04058-139b-4cbe-817d-9a9cda7225ca", BLERead | BLEWrite | BLENotify | BLEBroadcast, 512);  // Para obtener la Hora
 
 int status = WL_IDLE_STATUS;
 
@@ -37,14 +41,25 @@ void setup() {
 
   BLE.setLocalName("Arduino_Ckelar");
   BLE.setAdvertisedService(bleWifiService);
+
   bleWifiService.addCharacteristic(bleWifiScanCharacteristic);
+  bleWifiService.addCharacteristic(bleWifiStatusCharacteristic);
+
+  bleWifiService.addCharacteristic(bleSetHourCharacteristic);
+  bleWifiService.addCharacteristic(bleGetHourCharacteristic);
+
   BLE.addService(bleWifiService);
 
   BLE.advertise();
 
   BLE.setEventHandler(BLEConnected, bleConnectHandler);
   BLE.setEventHandler(BLEDisconnected, bleDisconnectHandler);
+
   bleWifiScanCharacteristic.setEventHandler(BLEWritten, bleCharacteristicWifiWritten);
+  bleWifiStatusCharacteristic.setEventHandler(BLEWritten, bleCharacteristicWifiStatus);
+
+  //bleSetHourCharacteristic.setEventHandler(BLEWritten, bleCharacteristicWifiWritten);
+  bleGetHourCharacteristic.setEventHandler(BLEWritten, bleCharacteristicRTCCurrent);
 
   Serial.println("Módulo Bluetooth® activado, esperando conexiones...");
 
@@ -68,6 +83,8 @@ void setup() {
   }
   Serial.println("Módulo SD® activado!");
 
+  // Initialize the RTC
+  RTC.begin();
 
   initConnectionWifiFromSD(fileWifiData, "wd.ad");
   getWifiListJson();
@@ -112,7 +129,7 @@ void bleDisconnectHandler(BLEDevice central) {
 */
 void bleCharacteristicWifiWritten(BLEDevice central, BLECharacteristic characteristic)
 {
-  Serial.print("Evento de escritura de característica: ");
+  Serial.print("Evento de escritura de característica de seteo de WIFI: ");
 
   uint8_t characteristicValue[200];
   int bytesRead = characteristic.readValue(characteristicValue, sizeof(characteristicValue));
@@ -169,6 +186,19 @@ void bleCharacteristicWifiWritten(BLEDevice central, BLECharacteristic character
 }
 
 /*
+ Obtiene el estado actual del WIFI
+*/
+void bleCharacteristicWifiStatus(BLEDevice central, BLECharacteristic characteristic)
+{
+  Serial.print("Evento de escritura de característica de estado actual WIFI: ");
+
+  // Esperar 2 segundos para imprimir los datos de la red:
+  delay(2000);
+
+  printWifiData();
+}
+
+/*
  Escanear redes WIFI disponibles y enviar redes encontradas al dispositivo por Bluetooth
 */
 void getWifiListJson() {
@@ -188,7 +218,6 @@ void getWifiListJson() {
   }
   else
   {
-    
     Serial.println("Conexión WIFI: Conectado");
     Serial.print("Dirección IP: ");
     Serial.println(ip);
@@ -305,4 +334,62 @@ bool saveDataWifiSD(File file, const char* fileName, const char* data)
     Serial.println("Error al abrir el archivo!");
     return false;
   }
+}
+
+/*
+  Utilizar RTC
+*/
+void bleCharacteristicRTCCurrent(BLEDevice central, BLECharacteristic characteristic)
+{
+  Serial.print("Evento RTC de escritura de característica de hora actual: ");
+
+  // Esperar 2 segundos para imprimir los datos de la red:
+  delay(2000);
+
+  printCurrentRTC();
+}
+
+/*
+ Imprimir datos RTC actuales
+*/
+void printCurrentRTC() {
+  
+  RTCTime currentTime;
+
+  StaticJsonDocument<1000> doc;
+  JsonObject statusRTC = doc.createNestedObject("rtc");
+
+  if (RTC.isRunning()) {
+    Serial.println("RTC en ejecución");
+    statusRTC["status"] = "RTC en ejecución";
+  }
+  else {
+    Serial.println("RTC detenido");
+    statusRTC["status"] = "RTC detenido";
+  }
+
+  /* GET CURRENT TIME FROM RTC */
+  RTC.getTime(currentTime);
+
+  /* PRINT CURRENT TIME on Serial */
+  Serial.print("Fecha actual: ");
+  Serial.print(currentTime);
+  //statusRTC["datetime"] = currentTime;
+
+  // Convertir DateTime a String
+  String dateStr = String(currentTime.getYear(), DEC) + '-' + 
+                    String(Month2int(currentTime.getMonth()), DEC) + '-' + 
+                    String(currentTime.getDayOfMonth(), DEC) + ' ' + 
+                    String(currentTime.getHour(), DEC) + ':' + 
+                    String(currentTime.getMinutes(), DEC) + ':' + 
+                    String(currentTime.getSeconds(), DEC);
+
+  statusRTC["datetime"] = dateStr;
+
+  String json;
+  serializeJson(doc, json);
+  Serial.println(json);
+
+  const char* jsonData = json.c_str();
+  bleWifiScanCharacteristic.writeValue((const uint8_t*)jsonData, json.length());
 }

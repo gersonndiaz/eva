@@ -292,6 +292,21 @@ namespace Eva.Helpers.BT
             }
         }
 
+        public async Task OnReceiveDataFromDevice(ICharacteristic characteristic)
+        {
+            try
+            {
+                var response = await characteristic.ReadAsync();
+            }
+            catch (Exception ex)
+            {
+                // Manejo de errores de conexión
+                Debug.WriteLine($"{ex}");
+                Console.WriteLine($"{ex}");
+                throw;
+            }
+        }
+
         #region Eventos Characteristics
         /// <summary>
         /// Recibe información desde el dispositivo conectado

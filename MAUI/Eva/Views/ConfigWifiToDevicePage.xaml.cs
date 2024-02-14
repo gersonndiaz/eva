@@ -86,7 +86,7 @@ public partial class ConfigWifiToDevicePage : ContentPage
         {
             networksItems.Clear();
 
-            networksItems = new ObservableCollection<Network>(wifiList.OrderByDescending(x => x.NetworkRssiInDecibelMilliwatts).ToList());
+            networksItems = new ObservableCollection<Models.App.Network>(wifiList.OrderByDescending(x => x.NetworkRssiInDecibelMilliwatts).ToList());
             wifiPicker.ItemsSource = networksItems;
         }
 
@@ -103,7 +103,7 @@ public partial class ConfigWifiToDevicePage : ContentPage
 
         try
         {
-            var selectedItem = wifiPicker.SelectedItem as Network;
+            var selectedItem = wifiPicker.SelectedItem as Models.App.Network;
             var password = passwordEntry.Text;
 
             object wifiConfig = new

@@ -24,7 +24,7 @@
                         <Label.FormattedText>
                             <FormattedString>
                                 <FormattedString.Spans>
-                                    <Span Text="¡Hola! Bienvenido a nuestra app, tu nuevo compañero para sacarle el máximo partido a tu dispositivo Arduino. Aquí, conectar tu Arduino es pan comido: puedes hacerlo fácilmente vía Bluetooth o USB. ¿Quieres configurar tu WiFi o ajustar la hora? ¡No hay problema! Con unos pocos toques, tendrás todo listo. Pero eso no es todo: también puedes enviar comandos personalizados a través de Bluetooth para que tu Arduino haga exactamente lo que necesitas. Ya sea para un proyecto escolar, un experimento casero o solo por diversión, nuestra app está aquí para ayudarte a hacer realidad tus ideas. ¡Disfruta creando!"/>
+                                    <Span Text="¡Hola! Bienvenido a nuestra app, tu nuevo compañero para sacarle el máximo partido a tu dispositivo Arduino. Aquí, conectar tu Arduino es pan comido: puedes hacerlo fácilmente vía Bluetooth. ¿Quieres configurar tu WiFi o ajustar la hora? ¡No hay problema! Con unos pocos toques, tendrás todo listo. Pero eso no es todo: también puedes enviar comandos personalizados a través de Bluetooth para que tu Arduino haga exactamente lo que necesitas. Ya sea para un proyecto escolar, un experimento casero o solo por diversión, nuestra app está aquí para ayudarte a hacer realidad tus ideas. ¡Disfruta creando!"/>
                                 </FormattedString.Spans>
                             </FormattedString>
                         </Label.FormattedText>
