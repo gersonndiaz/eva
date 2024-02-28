@@ -27,10 +27,10 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Primer elemento -->
+                <!-- Configuración WIFI -->
                 <Frame Grid.Row="0" Grid.Column="0" BackgroundColor="LightBlue" Padding="10">
                     <Frame.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="ConfigWifiToDevice_Tapped" />
+                        <TapGestureRecognizer Tapped="GetWifiFromDevice_Tapped" />
                     </Frame.GestureRecognizers>
                     <StackLayout>
                         <Image HeightRequest="100" WidthRequest="100">
@@ -38,27 +38,12 @@
                                 <FontImageSource FontFamily="FontSolid" Glyph="&#xf1eb;" />
                             </Image.Source>
                         </Image>
-                        <Label Text="Configurar WIFI →" HorizontalTextAlignment="Center"/>
+                        <Label Text="Configurar WIFI" HorizontalTextAlignment="Center"/>
                     </StackLayout>
                 </Frame>
 
-                <!-- Segundo elemento -->
+                <!-- Configuración RTC -->
                 <Frame Grid.Row="0" Grid.Column="1" BackgroundColor="LightGreen" Padding="10">
-                    <Frame.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="GetWifiFromDevice_Tapped" />
-                    </Frame.GestureRecognizers>
-                    <StackLayout>
-                        <Image HeightRequest="100" WidthRequest="100">
-                            <Image.Source>
-                                <FontImageSource FontFamily="FontSolid" Glyph="&#xf012;" />
-                            </Image.Source>
-                        </Image>
-                        <Label Text="Estado WIFI ←" HorizontalTextAlignment="Center"/>
-                    </StackLayout>
-                </Frame>
-
-                <!-- Tercer elemento -->
-                <Frame Grid.Row="1" Grid.Column="0" BackgroundColor="LightPink" Padding="10">
                     <Frame.GestureRecognizers>
                         <TapGestureRecognizer Tapped="GetDateTimeFromDevice_Tapped" />
                     </Frame.GestureRecognizers>
@@ -72,11 +57,18 @@
                     </StackLayout>
                 </Frame>
 
-                <!-- Cuarto elemento -->
-                <Frame Grid.Row="1" Grid.Column="1" BackgroundColor="LightCoral" Padding="10">
+                <!-- Enviar Instrucciones -->
+                <Frame Grid.Row="1" Grid.Column="0" BackgroundColor="LightGrey" Padding="10">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="SendCommand_Tapped" />
+                    </Frame.GestureRecognizers>
                     <StackLayout>
-                        <Image Source="icon4.png" HeightRequest="100" WidthRequest="100" />
-                        <Label Text="Enviar Datos" HorizontalTextAlignment="Center"/>
+                        <Image HeightRequest="100" WidthRequest="100">
+                            <Image.Source>
+                                <FontImageSource FontFamily="FontSolid" Glyph="&#xf120;" />
+                            </Image.Source>
+                        </Image>
+                        <Label Text="Comandos personalizados" HorizontalTextAlignment="Center"/>
                     </StackLayout>
                 </Frame>
             </Grid>

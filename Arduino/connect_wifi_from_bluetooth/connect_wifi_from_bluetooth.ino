@@ -20,6 +20,7 @@
 File fileWifiData;
 
 BLEService bleWifiService("2093346a-f97d-4849-8a8c-347696a8935b");                                                                        // UUID para el servicio BLE
+BLEService bleHourService("ea8dd1ba-fffa-4fe3-854b-c92bbfd4fd37");                                                                        // UUID para el servicio BLE
 BLECharacteristic bleWifiScanCharacteristic("9edf7ce0-0839-4d0c-95c6-4511a1cd012d", BLERead | BLEWrite | BLENotify | BLEBroadcast, 512);  // Para enviar la lista de WiFi
 BLECharacteristic bleWifiStatusCharacteristic("645cfbf1-ac92-433d-a1e2-fb87bdfc6a96", BLERead | BLEWrite | BLENotify | BLEBroadcast, 512);  // Para consultar el estado del WiFi
 BLECharacteristic bleSetHourCharacteristic("71fa80e7-1671-4bb6-b9a0-8b4153e90297", BLERead | BLEWrite | BLENotify | BLEBroadcast, 512);  // Para establecer la Hora
@@ -39,16 +40,18 @@ void setup() {
     while (1);
   }
 
-  BLE.setLocalName("Arduino_Ckelar");
+  BLE.setLocalName("Arduino Ckelar");
   BLE.setAdvertisedService(bleWifiService);
+  BLE.setAdvertisedService(bleHourService);
 
   bleWifiService.addCharacteristic(bleWifiScanCharacteristic);
   bleWifiService.addCharacteristic(bleWifiStatusCharacteristic);
 
-  bleWifiService.addCharacteristic(bleSetHourCharacteristic);
-  bleWifiService.addCharacteristic(bleGetHourCharacteristic);
+  bleHourService.addCharacteristic(bleSetHourCharacteristic);
+  bleHourService.addCharacteristic(bleGetHourCharacteristic);
 
   BLE.addService(bleWifiService);
+  BLE.addService(bleHourService);
 
   BLE.advertise();
 
@@ -59,7 +62,7 @@ void setup() {
   bleWifiStatusCharacteristic.setEventHandler(BLEWritten, bleCharacteristicWifiStatus);
 
   bleSetHourCharacteristic.setEventHandler(BLEWritten, bleCharacteristicRtcWritten);
-  bleGetHourCharacteristic.setEventHandler(BLEWritten, bleCharacteristicRTCCurrent);
+  bleGetHourCharacteristic.setEventHandler(BLERead, bleCharacteristicRTCCurrent);
 
   Serial.println("Módulo Bluetooth® activado, esperando conexiones...");
 
@@ -388,16 +391,27 @@ void bleCharacteristicRtcWritten(BLEDevice central, BLECharacteristic characteri
   }
 
   // Acceder a ls valores del JSON
-  const char* rDatetime = doc["datetime"];
+  const char* rDatetime = doc["rtc"]["datetime"];
+
+  // Extrae solo la fecha del string datetime
+  String datetimeStr = String(rDatetime);
+
+  // Extraer componentes de la fecha y hora
+  int year = datetimeStr.substring(0, 4).toInt();
+  int month = datetimeStr.substring(5, 7).toInt();
+  int day = datetimeStr.substring(8, 10).toInt();
+  int hour = datetimeStr.substring(11, 13).toInt();
+  int minute = datetimeStr.substring(14, 16).toInt();
+  int second = datetimeStr.substring(17, 19).toInt();
 
   // Imprimir los valores encontrados
   Serial.print("DateTime: ");
-  Serial.println(rDatetime);
+  Serial.println(datetimeStr);
 
   // Tu fecha y hora en formato string
   //char dateTime[] = "2024-02-14T14:30:00";
 
-  int year, month, day, hour, minute, second;
+  //int year, month, day, hour, minute, second;
   // Parsea la fecha y hora del string
   sscanf(rDatetime, "%d-%d-%dT%d:%d:%d", &year, &month, &day, &hour, &minute, &second);
   
@@ -456,5 +470,6 @@ void printCurrentRTC() {
   Serial.println(json);
 
   const char* jsonData = json.c_str();
-  bleWifiScanCharacteristic.writeValue((const uint8_t*)jsonData, json.length());
+  //bleWifiScanCharacteristic.writeValue((const uint8_t*)jsonData, json.length());
+  bleSetHourCharacteristic.writeValue((const uint8_t*)jsonData, json.length());
 }

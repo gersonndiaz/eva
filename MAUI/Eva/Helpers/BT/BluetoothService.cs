@@ -230,8 +230,16 @@ namespace Eva.Helpers.BT
                         var characteristicsService = await service.GetCharacteristicsAsync();
                         foreach (var characteristic in characteristicsService)
                         {
-                            characteristic.ValueUpdated += Characteristic_ValueUpdated;
-
+                            try
+                            {
+                                characteristic.ValueUpdated += Characteristic_ValueUpdated;
+                                await characteristic.StartUpdatesAsync();
+                            }
+                            catch
+                            {
+                                Debug.WriteLine($"Characteristic: No soporta la notificación!");
+                                Console.WriteLine($"Characteristic: No soporta la notificación!");
+                            }
 #if (DEBUG)
                             try
                             {
