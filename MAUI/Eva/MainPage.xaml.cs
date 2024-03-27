@@ -225,7 +225,8 @@ namespace Eva
                     foreach (var service in services)
                     {
                         var characteristicsService = await service.GetCharacteristicsAsync();
-                        var guidWifiCharacteristic = Guid.Parse("9edf7ce0-0839-4d0c-95c6-4511a1cd012d");
+                        //var guidWifiCharacteristic = Guid.Parse("9edf7ce0-0839-4d0c-95c6-4511a1cd012d");
+                        var guidWifiCharacteristic = Guid.Parse("645cfbf1-ac92-433d-a1e2-fb87bdfc6a96");
                         foreach (var characteristic in characteristicsService)
                         {
                             if (characteristic.Id == guidWifiCharacteristic)
