@@ -69,14 +69,14 @@ class BLEServer:
                 value = self.get_wifi_status()
                 self.ble.gatts_write(value_handle, value)
 
-    def advertise(self, name='ESP32_BLE_Server'):
+    def advertise(self, name='ESP32 Ckelar'):
         # Configurar y comenzar la publicidad BLE
         name_data = bytes(name, 'utf-8')  # Convertir el nombre a bytes
         adv_data = bytearray(2 + len(name_data))  # Crear un buffer de bytes para los datos de publicidad
         adv_data[0] = len(name_data) + 1  # Longitud del campo de nombre
         adv_data[1] = 0x09  # Tipo de campo (Nombre Completo Local)
         adv_data[2:] = name_data  # Copiar el nombre en los datos de publicidad
-        self.ble.gap_advertise(100, adv_data=adv_data)  # Iniciar la publicidad
+        self.ble.gap_advertise(100000, adv_data=adv_data)  # Iniciar la publicidad
 
     def get_wifi_status(self):
         # Obtener el estado de la conexión WiFi y convertirlo a JSON

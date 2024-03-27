@@ -44,6 +44,14 @@ public partial class ConnectDeviceBTPage : ContentPage
                 status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
             }
 
+#if (ANDROID23_0_OR_GREATER)
+            var statusBT = await Permissions.CheckStatusAsync<Permissions.Bluetooth>();
+            if (statusBT != PermissionStatus.Granted)
+            {
+                statusBT = await Permissions.RequestAsync<Permissions.Bluetooth>();
+            }
+#endif
+
             if (ble.State == BluetoothState.Off)
             {
                 // Pedir al usuario que active Bluetooth
