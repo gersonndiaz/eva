@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using Plugin.BLE.Abstractions.Contracts;
 using System.Diagnostics;
 using System.Text;
-using System.Xml.Linq;
 
 namespace Eva
 {
@@ -307,6 +306,9 @@ namespace Eva
 
                 var services = await device.GetServicesAsync();
 
+                ICharacteristic characteristicRTCGet = null;
+                ICharacteristic characteristicRTCSet = null;
+
                 if (services != null && services.Count > 0)
                 {
                     #region No funciona obtener la característica directamente. Confirmar después
@@ -375,58 +377,50 @@ namespace Eva
                     {
                         var characteristicsService = await service.GetCharacteristicsAsync();
                         var guidRtcSetCharacteristic = Guid.Parse("71fa80e7-1671-4bb6-b9a0-8b4153e90297");
+                        var guidRtcGetCharacteristic = Guid.Parse("ebe04058-139b-4cbe-817d-9a9cda7225ca");
                         foreach (var characteristic in characteristicsService)
                         {
-                            if (characteristic.Id ==  guidRtcSetCharacteristic)
+                            if (characteristic.Id == guidRtcGetCharacteristic)
                             {
-                                characteristic.ValueUpdated += BluetoothService_CharacteristicUpdated;
-                                await characteristic.StartUpdatesAsync();
-
-                                var v = await characteristic.ReadAsync();
-                                string val = Encoding.UTF8.GetString(v.data);
-                                var rtcModel = JsonConvert.DeserializeObject<RtcModel>(val);
-
-                                if (rtcModel != null)
-                                {
-                                    var actualizar = await DisplayAlert("Estado RTC", $"Estado del RTC del dispositivo {device.Name}: \n\nEstado: {rtcModel.rtc.status}\n\n* Fecha: {rtcModel.rtc.datetime}", "Actualizar", "Cerrar");
-
-                                    if (actualizar)
-                                    {
-                                        rtcModel.rtc.datetime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss").Replace(" ", "T");
-                                        var jsonToSend = JsonConvert.SerializeObject(rtcModel);
-
-                                        await characteristic.WriteAsync(Encoding.ASCII.GetBytes(jsonToSend));
-
-                                        await DisplayAlert("Estado RTC", $"RTC actualizado con éxito", "OK");
-
-                                        //#region Característica RTC
-                                        //try
-                                        //{
-
-                                        //    var cVal = await rtcCharacteristic.ReadAsync();
-                                        //    string cValData = Encoding.UTF8.GetString(cVal.data);
-                                        //    var rtcData = JsonConvert.DeserializeObject<RtcModel>(cValData);
-
-                                        //    if (rtcData != null)
-                                        //    {
-                                        //        await DisplayAlert("Estado RTC", $"Estado del RTC del dispositivo {device.Name}: \n\nEstado: {rtcData.rtc.status}\n\n* Fecha: {rtcData.rtc.datetime}", "OK");
-                                        //    }
-                                        //}
-                                        //catch (Exception ex)
-                                        //{
-                                        //    Debug.WriteLine($"{ex}");
-                                        //    Console.WriteLine($"{ex}");
-                                        //}
-                                        //#endregion Característica RTC
-                                    }
-                                }
-                                else
-                                {
-                                    await DisplayAlert("Estado RTC", $"No se pudo recuperar el estado de la fecha y hora del dispositivo. Por favor intentelo nuevamente.", "OK");
-                                }
+                                characteristicRTCGet = characteristic;
+                            }
+                            else if (characteristic.Id == guidRtcSetCharacteristic)
+                            {
+                                characteristicRTCSet = characteristic;
                             }
                         }
                     }
+
+                    #region 
+                    if (characteristicRTCGet != null)
+                    {
+                        characteristicRTCGet.ValueUpdated += BluetoothService_CharacteristicUpdated;
+                        await characteristicRTCGet.StartUpdatesAsync();
+
+                        var v = await characteristicRTCGet.ReadAsync();
+                        string val = Encoding.UTF8.GetString(v.data);
+                        var rtcModel = JsonConvert.DeserializeObject<RtcModel>(val);
+
+                        if (rtcModel != null && characteristicRTCSet != null)
+                        {
+                            var actualizar = await DisplayAlert("Estado RTC", $"Estado del RTC del dispositivo {device.Name}: \n\nEstado: {rtcModel.rtc.status}\n\n* Fecha: {rtcModel.rtc.datetime}", "Actualizar", "Cerrar");
+
+                            if (actualizar)
+                            {
+                                rtcModel.rtc.datetime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss").Replace(" ", "T");
+                                var jsonToSend = JsonConvert.SerializeObject(rtcModel);
+
+                                await characteristicRTCSet.WriteAsync(Encoding.ASCII.GetBytes(jsonToSend));
+
+                                await DisplayAlert("Estado RTC", $"RTC actualizado con éxito", "OK");
+                            }
+                        }
+                        else
+                        {
+                            await DisplayAlert("Estado RTC", $"No se pudo recuperar el estado de la fecha y hora del dispositivo. Por favor intentelo nuevamente.", "OK");
+                        }
+                    }
+                    #endregion
                 }
                 else
                 {

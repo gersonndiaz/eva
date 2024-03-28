@@ -1,5 +1,5 @@
 from micropython import const
-from machine import Timer
+from machine import Timer, RTC
 import network
 import ubluetooth
 import ujson
@@ -23,6 +23,18 @@ _BLE_UUID_GET_HOUR_Characteristic = ubluetooth.UUID('ebe04058-139b-4cbe-817d-9a9
 wifi = network.WLAN(network.STA_IF)  # Crear una instancia de la interfaz de red WiFi
 wifi.active(True)  # Activar la interfaz de red WiFi
 
+# RTC
+# Crear una instancia del RTC
+rtc = RTC()
+
+# Obtener la fecha y hora actual
+datetime = rtc.datetime()
+
+# Imprimir la fecha y hora
+print("Fecha y hora actual:")
+print(datetime)
+
+# Bluetooth
 class BLEServer:
     def __init__(self):
         self.ble = ubluetooth.BLE()  # Crear una instancia de BLE
@@ -49,6 +61,7 @@ class BLEServer:
             print("Dispositivo conectado:", conn_handle)
             self.connections.add(conn_handle)  # Agregar el handle de conexión al conjunto
             self.send_wifi_config()  # Enviar el estado de la conexión WiFi
+            self.get_rtc_current()  # Enviar los datos RTC
         elif event == _BLE_IRQ_CENTRAL_DISCONNECT:
             conn_handle, _, _ = data
             print("Dispositivo desconectado:", conn_handle)
@@ -60,6 +73,9 @@ class BLEServer:
             if value_handle == self.wifi_service_handle[0][0]:  # _BLE_UUID_SET_WIFI_Characteristic
                 value = self.ble.gatts_read(value_handle)  # Leer el valor escrito en la característica
                 self.handle_set_wifi_credentials(value)  # Manejar la escritura de credenciales WiFi
+            elif value_handle == self.wifi_service_handle[1][0]:  # _BLE_UUID_SET_HOUR_Characteristic
+                value = self.ble.gatts_read(value_handle)  # Leer el valor escrito en la característica
+                self.handle_set_rtc(value)  # Manejar la escritura de credenciales WiFi
         elif event == _BLE_IRQ_GATTS_READ_REQUEST:
             conn_handle, value_handle = data
             if value_handle == self.wifi_service_handle[0][0]:  # _BLE_UUID_SET_WIFI_Characteristic
@@ -67,6 +83,12 @@ class BLEServer:
                 self.ble.gatts_write(value_handle, value)  # Escribir el estado en la característica
             elif value_handle == self.wifi_service_handle[0][1]:  # _BLE_UUID_GET_WIFI_Characteristic
                 value = self.get_wifi_status()
+                self.ble.gatts_write(value_handle, value)
+            elif value_handle == self.wifi_service_handle[1][0]:  # _BLE_UUID_SET_HOUR_Characteristic
+                value = self.get_rtc_current()  # Obtener el estado de la conexión WiFi
+                self.ble.gatts_write(value_handle, value)  # Escribir el estado en la característica
+            elif value_handle == self.wifi_service_handle[1][1]:  # _BLE_UUID_GET_HOUR_Characteristic
+                value = self.get_rtc_current()
                 self.ble.gatts_write(value_handle, value)
 
     def advertise(self, name='ESP32 Ckelar'):
@@ -125,6 +147,61 @@ class BLEServer:
             print("Conexión WiFi establecida:", wifi.ifconfig())
         except Exception as e:
             print("Error al conectar a WiFi:", e)
+            
+    def get_rtc_current(self):
+        # Obtener la fecha y hora y convertirlo a JSON
+        fecha_hora = "{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}".format(
+            datetime[0], datetime[1], datetime[2], datetime[4], datetime[5], datetime[6]
+        )
+        
+        rtc_current = {
+            "rtc": {
+                "status": "Corriendo", #"Corriendo" RTC.RUNNING else "Detenido",
+                "datetime": fecha_hora
+            }
+        }
+        rtc_json = ujson.dumps(rtc_current)  # Convertir el diccionario a JSON
+        print("RTC:", rtc_json)
+        return rtc_json.encode('utf-8')  # Codificar el JSON a bytes
+    
+    def send_rtc_data(self):
+        # Enviar los datos de RTC a los dispositivos conectados
+        status_bytes = self.get_rtc_current()  # Obtener el estado en bytes
+        for conn_handle in self.connections:
+            try:
+                self.ble.gatts_notify(conn_handle, self.wifi_service_handle[1][1], status_bytes)  # Notificar el RTC a través de BLE
+                print("Datos RTC enviados:", status_bytes)
+            except Exception as e:
+                print("Error al notificar el RTC:", e)
+                
+    def handle_set_rtc(self, value):
+        # Manejar la escritura de la fecha y hora desde un dispositivo conectado
+        try:
+            data = ujson.loads(value)  # Decodificar el JSON recibido
+            # Extraer la cadena de fecha y hora.
+            datetime_str = data['rtc']['datetime']
+
+            # Convertir la cadena de fecha y hora a componentes individuales.
+            # Primero, se separa la cadena por la "T" para dividir fecha y hora.
+            date_str, time_str = datetime_str.split('T')
+
+            # Luego, se convierte cada parte a componentes individuales.
+            year, month, day = [int(part) for part in date_str.split('-')]
+            hour, minute, second = [int(part) for part in time_str.split(':')]
+
+            # Crear una instancia de RTC.
+            rtc = RTC()
+
+            # Establecer la fecha y hora.
+            # La estructura es: año, mes, día, día de la semana, hora, minuto, segundo, subsegundo.
+            # Nota: El día de la semana (0-6) y subsegundo son normalmente ignorados en la configuración,
+            # pero son necesarios en la tupla. Se asume 0 para ambos aquí.
+            rtc.datetime((year, month, day, 0, hour, minute, second, 0))
+
+            # Para verificar, imprimimos la fecha y hora establecidas.
+            print("Fecha actualizada:", rtc.datetime())
+        except ValueError:
+            print("Error al decodificar JSON de fecha y hora")
 
 def main():
     ble_server = BLEServer()  # Crear una instancia del servidor BLE
