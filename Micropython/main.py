@@ -1,8 +1,18 @@
-from micropython import const
-from machine import Timer, RTC
 import network
 import ubluetooth
 import ujson
+import os
+import machine
+import sdcard
+from micropython import const
+from machine import Timer, RTC, Pin, SPI
+
+# Configurar el SPI
+#spi = machine.SPI(2, baudrate=80000000, polarity=0, phase=0)
+spi = machine.SPI(2, baudrate=80000000, polarity=0, phase=0, sck=Pin(18), mosi=Pin(23), miso=Pin(19))
+
+# Configurar el chip select
+cs = machine.Pin(5, machine.Pin.OUT)
 
 # Definición de constantes para los eventos BLE
 _BLE_IRQ_CENTRAL_CONNECT = const(1)  # Evento de conexión de un dispositivo central
@@ -202,7 +212,16 @@ class BLEServer:
             print("Fecha actualizada:", rtc.datetime())
         except ValueError:
             print("Error al decodificar JSON de fecha y hora")
+            
+#SD
+try:
+    sd = sdcard.SDCard(spi, cs)
 
+    # Montar el sistema de archivos
+    os.mount(sd, '/sd')
+except Exception as e:
+    print("Error al montar la SD:", e)
+    
 def main():
     ble_server = BLEServer()  # Crear una instancia del servidor BLE
     print("Servidor BLE iniciado, esperando conexiones...")
