@@ -3,7 +3,6 @@ import ubluetooth
 import ujson
 import os
 import machine
-import sdcard
 from micropython import const
 from machine import Timer, RTC, Pin, SPI
 
